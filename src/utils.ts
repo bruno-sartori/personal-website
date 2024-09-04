@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { CollectionEntry, Heading, TApiMethods } from './types';
+import { CollectionEntry, Heading } from './types';
 import { Parser, DomHandler } from 'htmlparser2';
 
 // Função para combinar classes com Tailwind CSS

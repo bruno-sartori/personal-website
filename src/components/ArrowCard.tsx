@@ -18,7 +18,7 @@ const ArrowCard: React.FC<Props> = ({ entry, type }) => {
           {entry.title}
         </div>
         <div className="text-sm">
-          {entry.description}
+          {entry.description?.replace(/<[^>]*>/g, '')}
         </div>
       </div>
       <svg

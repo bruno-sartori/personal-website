@@ -51,7 +51,7 @@ const PageFind: React.FC = () => {
   });
 
   return (
-    <aside>
+    <aside data-pagefind-ignore>
       <div
         ref={backdropRef}
         onClick={onBackdropClick}
@@ -68,7 +68,7 @@ const PageFind: React.FC = () => {
             open={pageFindOpen}
             uiOptions={{
               showImages: true,
-              excerptLength: 15,
+              excerptLength: 100,
               resetStyles: true,
             }}
           />
