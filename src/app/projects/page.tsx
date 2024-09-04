@@ -16,7 +16,7 @@ const ProjectsPage = async () => {
 
   return (
     <Container>
-      <aside>
+      <aside data-pagefind-ignore>
         <div className="space-y-10">
           <div className="animate font-semibold text-black dark:text-white">
             Projects

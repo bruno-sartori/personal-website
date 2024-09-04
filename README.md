@@ -3,8 +3,6 @@
 # Personal Website
 My personal website where I post my Articles and Open Source Projects.
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
 ## Usage
 
 First, run the development server:
@@ -22,3 +20,14 @@ bun dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Page Insights
+
+![Page Insights](./docs/page-insights.jpg)
+
+## Technologies used in this project
+
+| Name                | Description                                                                                                                        |
+|---------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| [Next.js](https://nextjs.org/)                                        | Next.js is a popular React framework that offers static generation, SSR, etc.    |
+| [Tailwind CSS](https://tailwindcss.com/)                              | A utility-first CSS framework packed with classes like flex, pt-4, text-center and rotate-90 that can be composed to build any design, directly in your markup.  |
+| [Node.js](https://nodejs.org/en)                                      | Node.js is a Javascript runtime build on Chrome`s V8 JavaScript                  |
+| [Typescript](https://www.typescriptlang.org)                          | Typescript extends JavaScript by adding types to the language                    |

@@ -39,7 +39,7 @@ const BlogPage = async () => {
 
   return (
     <Container>
-      <aside>
+      <aside data-pagefind-ignore>
         <div className="space-y-10">
           <div className="space-y-4">
             {years.map((year) => (
