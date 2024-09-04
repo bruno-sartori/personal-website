@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   try {
     const config: RequestInit = {
       headers: {
-        Authorization: `Bearer ${process.env.GITHUB_ACCESS_TOKEN}`,
+        Authorization: process.env.GITHUB_ACCESS_TOKEN as string,
         'X-GitHub-Api-Version': '2022-11-28'
       },
       cache: 'force-cache'
