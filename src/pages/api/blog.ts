@@ -11,6 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://medium.com/feed/@brunosartori.dev`);
     
     if (!response.ok) {
+      console.error(response);
       res.status(500).json({ data: [] });
     }
     
@@ -24,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     
     res.status(200).json({ data: data.items })
   } catch (error) {
+    console.error(error);
     res.status(500).json({ data: [] });
   }
 }
