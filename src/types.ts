@@ -146,3 +146,9 @@ export interface GithubRepo {
 export type TApiMethods = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export type TTheme = 'light' | 'dark' | 'system';
+
+export interface UIOptions {
+  showImages?: boolean;
+  excerptLength?: number;
+  resetStyles?: boolean;
+}

@@ -36,7 +36,7 @@ export default async function Home() {
 
   return (
     <Container>
-      <aside>
+      <aside data-pagefind-ignore>
         <h1 className="animate font-semibold text-black dark:text-white">
           About Me
         </h1>

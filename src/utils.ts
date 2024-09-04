@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { CollectionEntry, Heading, TApiMethods } from './types';
+import { CollectionEntry, Heading } from './types';
 import { Parser, DomHandler } from 'htmlparser2';
 
 // Função para combinar classes com Tailwind CSS
@@ -27,7 +27,7 @@ export function readingTime(html: string): string {
 
 export async function getCollection(): Promise<CollectionEntry<'blog'>[]> {
   try {
-    const response = await fetch(`http://localhost:3000/api/blog`);
+    const response = await fetch(`${process.env.PRODUCTION_URL}/api/blog`);
     if (!response.ok) {
       throw new Error('Failed to fetch collection');
     }
@@ -40,7 +40,7 @@ export async function getCollection(): Promise<CollectionEntry<'blog'>[]> {
 
 export async function getProjects(): Promise<CollectionEntry<'projects'>[]> {
   try {
-    const response = await fetch(`http://localhost:3000/api/projects`);
+    const response = await fetch(`${process.env.PRODUCTION_URL}/api/projects`);
     if (!response.ok) {
       throw new Error('Failed to fetch collection');
     }
