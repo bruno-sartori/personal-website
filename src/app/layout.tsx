@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Head title={`${title} | ${SITE.TITLE}`} description={description!} url='teste' site="http://localhost:3000" />
+        <Head title={`${title} | ${SITE.TITLE}`} description={description!} />
         <MainContextProvider>
           <>
             <Header />

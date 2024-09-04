@@ -22,6 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const response = await fetch(reposUrl, config);
 
     if (!response.ok) {
+      console.error(response);
       res.status(500).json({ data: [] });
     }
 
@@ -44,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         const repoDetailResponse = await fetch(repoDetailUrl, config);
         repoDetail = await repoDetailResponse.json();
       } catch (error) {
-        console.error(`1`, error)
+        console.error(error);
       }
 
       let readme = '';
@@ -75,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     res.status(200).json({ data: resp })
   } catch (error) {
-    console.error(`2`, error);
+    console.error(error);
     res.status(500).json({ data: [] });
   }
 }
