@@ -1,0 +1,144 @@
+yellow='\033[0;33m'
+green='\033[0;32m'
+blue='\033[0;34m'
+red='\033[0;31m'
+no_color='\033[0m'
+
+ABORT_IF_ANY_VERSION_WAS_NOT_UPDATED=0
+ABORT_IF_MAJOR_VERSION_WAS_NOT_UPDATED=1
+POTENTIALLY_BREAKABLE_CHANGES=0
+
+set -o nounset
+
+compare_strings() {
+  string_antiga="$1"
+  string_nova="$2"
+
+  # Inicialize a string resultante
+  resultado=""
+
+  # Inicialize os índices
+  i=0
+  j=0
+
+  # Percorra a string nova e compare com a string antiga
+  while [ $i -lt ${#string_nova} ]; do
+    char_nova="${string_nova:i:1}"
+    char_antiga="${string_antiga:j:1}"
+
+    # Se o caractere da string nova for igual ao da string antiga, adicione-o sem destaque
+    if [ "$char_nova" = "$char_antiga" ]; then
+      resultado="$resultado$char_nova"
+      i=$((i+1))
+      j=$((j+1))
+    else
+      # Se o caractere da string nova não estiver na string antiga, destaque-o em verde
+      if [ "$char_nova" != "$char_antiga" ] && [ ! "$char_nova" = "$char_antiga" ]; then
+        resultado="$resultado${green}${char_nova}${no_color}"
+        i=$((i+1))
+      else
+        # Adicione caracteres da string antiga até encontrar o caractere correspondente
+        while [ "$char_nova" != "$char_antiga" ] && [ $j -lt ${#string_antiga} ]; do
+          resultado="$resultado${red}${char_antiga}${no_color}"
+          j=$((j+1))
+          char_antiga="${string_antiga:j:1}"
+        done
+      fi
+    fi
+  done
+
+  # Adicione o restante dos caracteres da string antiga, se houver
+  while [ $j -lt ${#string_antiga} ]; do
+    resultado="$resultado${red}${string_antiga:j:1}${no_color}"
+    j=$((j+1))
+  done
+
+  # Retorne o resultado
+  echo -e "${resultado}"
+}
+
+printf "${blue}Initializing Husky${no_color}\n"
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+SITE_CHANGES=$(git status -s "$REPO_ROOT" | wc -l)
+printf "Detected ${yellow}$SITE_CHANGES${no_color} changes\n"
+
+if [ "$SITE_CHANGES" -gt 0 ]; then
+
+  # Check files for function signature changes
+  CHANGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx)$')
+
+  if [ -n "$CHANGED_FILES" ]; then
+    printf "${blue}Checking TypeScript files for potentially breakable changes...${no_color}\n"
+    
+    # Define the regex pattern
+    REGEX="function\s+[a-zA-Z_$][0-9a-zA-Z_$]*\s*\([^)]*\)(?:\s*:\s*[a-zA-Z_$][0-9a-zA-Z_$]*)?\s*(?:;|\{)|[a-zA-Z_$][0-9a-zA-Z_$]*\s*=\s*\([^)]*\)(?:\s*:\s*[a-zA-Z_$][0-9a-zA-Z_$]*)?\s*=>\s*[^\{]*?(?:;|\s*)|(?:public|private|protected)?\s*[a-zA-Z_$][0-9a-zA-Z_$]*\s*\([^)]*\)(?:\s*:\s*[a-zA-Z_$][0-9a-zA-Z_$]*)?\s*(?:;|\{)"
+  
+    # Iterate over staged TypeScript files
+    for FILE in $CHANGED_FILES; do
+      if [[ -f "$REPO_ROOT/$FILE" ]]; then
+        printf "Checking file ${yellow}$FILE${no_color}...\n"
+  
+        # Obtém as alterações adicionadas e removidas
+        STAGED_ADDITIONS=$(git diff --cached "$REPO_ROOT/$FILE" | grep -E "^\+[^+]" | sed 's/^\+//')
+        STAGED_REMOVALS=$(git diff --cached "$REPO_ROOT/$FILE" | grep -E "^\-[^-]" | sed 's/^\-//')
+
+        ADDITIONS_MATCHED=""
+        REMOVALS_MATCHED=""
+
+        # Verifica se STAGED_ADDITIONS não está vazio e executa grep se não estiver
+        if [ -n "$STAGED_ADDITIONS" ]; then
+          # Captura a parte correspondente ao regex
+          ADDITIONS_MATCHED=$(printf "%s" "$STAGED_ADDITIONS" | grep -P -o "$REGEX" || true)
+        fi
+
+        # Verifica se STAGED_REMOVALS não está vazio e executa grep se não estiver
+        if [ -n "$STAGED_REMOVALS" ]; then
+          # Captura a parte correspondente ao regex
+          REMOVALS_MATCHED=$(printf "%s" "$STAGED_REMOVALS" | grep -P -o "$REGEX" || true)
+        fi
+        
+        if [ -n "$ADDITIONS_MATCHED" ]; then
+          printf "${red}Signature changes detected in ${yellow}$FILE${no_color}. Showing changes:\n"
+          # Chame a função e exiba o resultado
+          compare_strings "$REMOVALS_MATCHED" "$ADDITIONS_MATCHED"
+          POTENTIALLY_BREAKABLE_CHANGES=1
+        fi
+      fi
+    done
+
+    if [ "$POTENTIALLY_BREAKABLE_CHANGES" -eq 1 ]; then
+      printf "Checking to make sure package version was updated...\n"
+      
+      if [ "$ABORT_IF_ANY_VERSION_WAS_NOT_UPDATED" -eq 1 ]; then
+        VERSION_CHANGED=$(git diff -G '"version":' --cached package.json | wc -l)
+
+        if [ "$VERSION_CHANGED" -gt "0" ]; then
+          printf "${green}Version was updated!  Continuing...${no_color}\n"
+        else
+          printf "${red}Version was not updated :( Aborting commit.${no_color}\n"
+          exit 1
+        fi
+      elif [ "$ABORT_IF_MAJOR_VERSION_WAS_NOT_UPDATED" -eq 1 ]; then
+        CURRENT_VERSION=$(grep -oP '"version":\s*"\K[0-9]+\.[0-9]+\.[0-9]+"' package.json | tr -d '"')
+        CURRENT_MAJOR=$(echo "$CURRENT_VERSION" | cut -d'.' -f1)
+
+        STAGED_VERSION=$(git diff --cached package.json | grep -oP '"version":\s*"\K[0-9]+\.[0-9]+\.[0-9]+"' | tr -d '"')
+        STAGED_MAJOR=$(echo "$STAGED_VERSION" | cut -d'.' -f1)
+
+        if [ -n "$STAGED_MAJOR" ]; then
+          # Check if the MAJOR version has changed
+          if [ "$CURRENT_MAJOR" != "$STAGED_MAJOR" ]; then
+            printf "${green}MAJOR version was updated! Continuing...${no_color}\n"
+          else
+            printf "${red}MAJOR version was not updated :( Aborting commit.${no_color}\n"
+          fi
+        else 
+          printf "${red}MAJOR version was not updated :( Aborting commit.${no_color}\n"
+          exit 1
+        fi
+      fi
+    fi
+  fi
+fi

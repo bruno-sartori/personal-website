@@ -83,7 +83,7 @@ export const MainContextProvider = ({ children }: IMainContextProviderProps) => 
       });
     }
 
-    function onScroll() {
+    function onScroll(lorem = 'ipsum') {
       if (window.scrollY > 0) {
         document.documentElement.classList.add("scrolled");
       } else {

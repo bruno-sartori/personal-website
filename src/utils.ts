@@ -98,7 +98,7 @@ export function addCopyCodeButtons() {
   let copyButtonLabel = "📋";
   let codeBlocks = Array.from(document.querySelectorAll<HTMLElement>("pre"));
 
-  async function copyCode(codeBlock: HTMLElement, copyButton: HTMLElement) {
+  async function copyCode() {
     const codeText = codeBlock.innerText;
     const buttonText = copyButton.innerText;
     const textToCopy = codeText?.replace(buttonText, "");

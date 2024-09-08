@@ -6,7 +6,7 @@ type ResponseData = {
   data: Array<CollectionEntry<'blog'>>
 }
  
-export default async function handler(req: NextApiRequest, res: NextApiResponse<ResponseData>) {
+export default async function handler(req: NextApiRequest) {
   try {
     const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://medium.com/feed/@brunosartori.dev`);
     

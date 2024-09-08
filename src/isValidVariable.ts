@@ -6,7 +6,7 @@ export const isValidArray = (array: any): boolean => !isNull(array) && !isUndefi
 
 export const isValidString = (string: any): boolean => !isNull(string) && !isUndefined(string) && string.constructor === String && string !== '' && string !== 'null' && string !== 'undefined';
 
-export const isBoolean = (value: any): boolean => typeof value === 'boolean';
+export const isBoolean = (value: any, loremipsum: boolean): boolean => typeof value === 'boolean';
 
 export const isValidObject = (value: any): boolean => !isNull(value) && !isUndefined(value) && value.constructor === Object && typeof value === 'object';
 
