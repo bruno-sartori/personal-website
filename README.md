@@ -1,33 +1,54 @@
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/) 
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
 # Personal Website
-My personal website where I post my Articles and Open Source Projects.
+
+My personal website: an AI-first portfolio, with posts pulled from Medium and projects pulled from GitHub.
+
+## Highlights
+
+- **AI workflow front and center**: a human-in-the-loop pipeline, an agent toolkit, and an animated agent-session terminal.
+- **Futuristic UI**: neural-network canvas background, HUD panels, pointer spotlight, and scroll-driven reveals (with `prefers-reduced-motion` respected).
+- **Command palette** (`⌘K` / `Ctrl K` / `/`): jump to pages, posts, and repos, or hand a question to Claude, which reads `/llms.txt`.
+- **AI-readable**: `/llms.txt` describes the site for LLMs and agents. Posts offer "Summarize with Claude / ChatGPT" links.
+- **Live content**: Medium RSS (via rss2json) and GitHub repositories/READMEs, revalidated hourly (ISR).
+- SEO basics: Open Graph image, `sitemap.xml` and `robots.txt`.
 
 ## Usage
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
+yarn install
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-## Page Insights
+### Environment variables
 
-![Page Insights](./docs/page-insights.jpg)
+| Name                  | Required | Description                                                       |
+|-----------------------|----------|-------------------------------------------------------------------|
+| `PRODUCTION_URL`      | no       | Public URL of the site (used for metadata, sitemap and llms.txt). |
+| `GITHUB_ACCESS_TOKEN` | no       | GitHub token, which raises the API rate limit when fetching repos. |
+
+## Structure
+
+```
+src/
+  app/            routes (home, blog, projects, llms.txt, sitemap, robots, OG image)
+  components/
+    site/         header, footer, command palette, background, global effects
+    home/         agent terminal
+    ui/           cards, headings, icons, table of contents
+  lib/
+    content.ts    Medium + GitHub data fetching
+    profile.ts    all copy about me (shared by the home page and llms.txt)
+    site.ts       site config, socials, navigation
+```
 
 ## Technologies used in this project
 
-| Name                | Description                                                                                                                        |
-|---------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| [Next.js](https://nextjs.org/)                                        | Next.js is a popular React framework that offers static generation, SSR, etc.    |
-| [Tailwind CSS](https://tailwindcss.com/)                              | A utility-first CSS framework packed with classes like flex, pt-4, text-center and rotate-90 that can be composed to build any design, directly in your markup.  |
-| [Node.js](https://nodejs.org/en)                                      | Node.js is a Javascript runtime build on Chrome`s V8 JavaScript                  |
-| [Typescript](https://www.typescriptlang.org)                          | Typescript extends JavaScript by adding types to the language                    |
+| Name                                         | Description                                          |
+|----------------------------------------------|------------------------------------------------------|
+| [Next.js](https://nextjs.org/)               | React framework (App Router, ISR, route handlers)    |
+| [Tailwind CSS](https://tailwindcss.com/)     | Utility-first CSS framework                          |
+| [TypeScript](https://www.typescriptlang.org) | Typed JavaScript                                     |
+| [Geist](https://vercel.com/font)             | Sans and mono typefaces                              |
