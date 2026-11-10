@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useMediaQuery } from '@/lib/hooks';
 
 type Kind = 'ctx' | 'tool' | 'ok' | 'warn' | 'gate';
 
@@ -72,24 +73,18 @@ export default function AgentTerminal() {
   const [typed, setTyped] = useState(0);
   const [shown, setShown] = useState(0);
   const [spin, setSpin] = useState(0);
-  const [reduced, setReduced] = useState(false);
+  const reduced = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   const current = SESSIONS[session];
-  const typing = typed < current.prompt.length;
-  const running = !typing && shown < current.steps.length;
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(mq.matches);
-  }, []);
+  // With reduced motion, show the whole first session statically.
+  const typedCount = reduced ? current.prompt.length : typed;
+  const shownCount = reduced ? current.steps.length : shown;
+  const typing = typedCount < current.prompt.length;
+  const running = !typing && shownCount < current.steps.length;
 
   // Timeline for the current session.
   useEffect(() => {
-    if (reduced) {
-      setTyped(SESSIONS[session].prompt.length);
-      setShown(SESSIONS[session].steps.length);
-      return;
-    }
+    if (reduced) return;
 
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -97,8 +92,6 @@ export default function AgentTerminal() {
       timers.push(setTimeout(() => !cancelled && fn(), ms));
 
     const { prompt, steps } = SESSIONS[session];
-    setTyped(0);
-    setShown(0);
 
     let t = 500;
     for (let i = 1; i <= prompt.length; i++) {
@@ -111,7 +104,11 @@ export default function AgentTerminal() {
       at(t, () => setShown(i + 1));
     });
     t += 4200;
-    at(t, () => setSession((s) => (s + 1) % SESSIONS.length));
+    at(t, () => {
+      setTyped(0);
+      setShown(0);
+      setSession((s) => (s + 1) % SESSIONS.length);
+    });
 
     return () => {
       cancelled = true;
@@ -152,13 +149,13 @@ export default function AgentTerminal() {
       >
         <p className="text-white">
           <span className="text-neon">❯</span> agent{' '}
-          <span className="text-fg/90">&quot;{current.prompt.slice(0, typed)}</span>
+          <span className="text-fg/90">&quot;{current.prompt.slice(0, typedCount)}</span>
           {!typing && <span className="text-fg/90">&quot;</span>}
           {typing && <span className="caret" />}
         </p>
 
         <ul className="mt-2 space-y-0.5">
-          {current.steps.slice(0, shown).map((step, i) => {
+          {current.steps.slice(0, shownCount).map((step, i) => {
             const style = KIND_STYLE[step.kind];
             return (
               <li key={`${session}-${i}`} className="rise flex min-w-0 gap-3" style={{ animationDuration: '0.35s' }}>

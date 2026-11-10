@@ -31,7 +31,7 @@ export default async function HomePage() {
       <section className="relative pb-24 pt-32 sm:pt-40">
         <div className="container-site">
           <p
-            className="rise inline-flex items-center gap-2.5 rounded-full border border-line/10 bg-line/[0.03] px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-fg/70 backdrop-blur"
+            className="rise inline-flex items-center gap-2.5 rounded-full border border-line/10 bg-line/[0.03] px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-fg/70 backdrop-blur-sm"
             style={{ '--d': '0ms' } as React.CSSProperties}
           >
             <span className="status-dot" /> {SITE.location} · remote
@@ -72,7 +72,7 @@ export default async function HomePage() {
               style={{ '--d': '360ms', gap: '1px' } as React.CSSProperties}
             >
               {STATS.map((stat) => (
-                <div key={stat.value} className="bg-ink/85 px-4 py-4 backdrop-blur">
+                <div key={stat.value} className="bg-ink/85 px-4 py-4 backdrop-blur-sm">
                   <dt className="sr-only">{stat.label}</dt>
                   <dd>
                     <span className="block font-mono text-xl font-medium text-white">{stat.value}</span>
@@ -148,7 +148,7 @@ export default async function HomePage() {
           {/* toolkit */}
           <div className="mt-20 flex items-center gap-4" data-reveal>
             <p className="kicker">Toolkit</p>
-            <span className="h-px flex-1 bg-gradient-to-r from-line/15 to-transparent" aria-hidden="true" />
+            <span className="h-px flex-1 bg-linear-to-r from-line/15 to-transparent" aria-hidden="true" />
           </div>
           <ul className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {TOOLKIT.map((item) => (

@@ -15,9 +15,14 @@ My personal website: an AI-first portfolio, with posts pulled from Medium and pr
 
 ## Usage
 
+Requires **Node.js 26 LTS** (pinned in `.node-version` and `package.json` `engines`). With [fnm](https://github.com/Schniz/fnm), entering the folder switches to it automatically.
+
 ```bash
+fnm install   # reads .node-version
 yarn install
 yarn dev
+yarn lint     # ESLint (flat config)
+yarn build
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
@@ -48,7 +53,8 @@ src/
 
 | Name                                         | Description                                          |
 |----------------------------------------------|------------------------------------------------------|
-| [Next.js](https://nextjs.org/)               | React framework (App Router, ISR, route handlers)    |
-| [Tailwind CSS](https://tailwindcss.com/)     | Utility-first CSS framework                          |
+| [Next.js 16](https://nextjs.org/)            | React framework (App Router, ISR, route handlers)    |
+| [React 19](https://react.dev/)               | UI library                                           |
+| [Tailwind CSS 4](https://tailwindcss.com/)   | Utility-first CSS framework (CSS-first config)       |
 | [TypeScript](https://www.typescriptlang.org) | Typed JavaScript                                     |
 | [Geist](https://vercel.com/font)             | Sans and mono typefaces                              |

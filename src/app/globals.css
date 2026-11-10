@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
 /* ------------------------------------------------------------------ */
 /* Tokens                                                              */
@@ -21,111 +20,128 @@
   color-scheme: dark;
 }
 
+@theme inline {
+  --color-ink: rgb(var(--ink));
+  --color-ink-2: rgb(var(--ink-2));
+  --color-fg: rgb(var(--fg));
+  --color-muted: rgb(var(--muted));
+  --color-line: rgb(var(--line));
+  --color-neon: rgb(var(--neon));
+  --color-plasma: rgb(var(--plasma));
+  --color-flux: rgb(var(--flux));
+  --color-signal: rgb(var(--signal));
+}
+
+@theme {
+  --font-sans: 'Geist Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --container-site: 72rem;
+}
+
 /* ------------------------------------------------------------------ */
 /* Base                                                                */
 /* ------------------------------------------------------------------ */
 
-html {
-  background: rgb(var(--ink));
-  scroll-behavior: smooth;
-  scroll-padding-top: 6rem;
-  -webkit-tap-highlight-color: transparent;
-}
+@layer base {
+  html {
+    background: rgb(var(--ink));
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-body {
-  @apply flex min-h-screen flex-col font-sans text-fg/80 antialiased;
-  overflow-x: hidden;
-}
+  body {
+    @apply flex min-h-screen flex-col font-sans text-fg/80 antialiased;
+    overflow-x: hidden;
+  }
 
-::selection {
-  background: rgb(var(--neon) / 0.28);
-  color: #fff;
-}
+  ::selection {
+    background: rgb(var(--neon) / 0.28);
+    color: #fff;
+  }
 
-:focus-visible {
-  outline: 2px solid rgb(var(--neon));
-  outline-offset: 3px;
-  border-radius: 6px;
-}
+  :focus-visible {
+    outline: 2px solid rgb(var(--neon));
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgb(var(--line) / 0.14) transparent;
-}
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--line) / 0.14) transparent;
+  }
 
-.skip-link {
-  @apply fixed left-4 top-3 z-[200] -translate-y-20 rounded-md bg-neon px-3 py-2 font-mono text-xs font-medium text-ink transition-transform;
-}
-.skip-link:focus {
-  @apply translate-y-0;
+  /* Tailwind v4 dropped the pointer cursor on buttons; keep it. */
+  button:not(:disabled),
+  [role='button']:not(:disabled),
+  [role='option'] {
+    cursor: pointer;
+  }
 }
 
 /* ------------------------------------------------------------------ */
 /* Ambient background                                                  */
 /* ------------------------------------------------------------------ */
 
-.bg-aurora,
-.bg-grid,
-.bg-noise,
-.bg-neural {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-}
+@layer components {
+  .bg-aurora,
+  .bg-grid,
+  .bg-noise,
+  .bg-neural {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
 
-.bg-aurora {
-  z-index: -40;
-  overflow: hidden;
-}
-.bg-aurora::before,
-.bg-aurora::after {
-  content: '';
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(120px);
-  opacity: 0.32;
-  animation: drift 26s ease-in-out infinite alternate;
-}
-.bg-aurora::before {
-  width: 46rem;
-  height: 30rem;
-  top: -14rem;
-  left: -10rem;
-  background: rgb(var(--neon) / 0.55);
-}
-.bg-aurora::after {
-  width: 40rem;
-  height: 32rem;
-  top: -10rem;
-  right: -12rem;
-  background: rgb(var(--plasma) / 0.6);
-  animation-delay: -13s;
-}
+  .bg-aurora {
+    z-index: -40;
+    overflow: hidden;
+  }
+  .bg-aurora::before,
+  .bg-aurora::after {
+    content: '';
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(120px);
+    opacity: 0.32;
+    animation: drift 26s ease-in-out infinite alternate;
+  }
+  .bg-aurora::before {
+    width: 46rem;
+    height: 30rem;
+    top: -14rem;
+    left: -10rem;
+    background: rgb(var(--neon) / 0.55);
+  }
+  .bg-aurora::after {
+    width: 40rem;
+    height: 32rem;
+    top: -10rem;
+    right: -12rem;
+    background: rgb(var(--plasma) / 0.6);
+    animation-delay: -13s;
+  }
 
-.bg-grid {
-  z-index: -30;
-  background-image:
-    linear-gradient(rgb(var(--line) / 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--line) / 0.045) 1px, transparent 1px);
-  background-size: 56px 56px;
-  background-position: center top;
-  mask-image: radial-gradient(ellipse 75% 55% at 50% 0%, #000 25%, transparent 75%);
-}
+  .bg-grid {
+    z-index: -30;
+    background-image:
+      linear-gradient(rgb(var(--line) / 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--line) / 0.045) 1px, transparent 1px);
+    background-size: 56px 56px;
+    background-position: center top;
+    mask-image: radial-gradient(ellipse 75% 55% at 50% 0%, #000 25%, transparent 75%);
+  }
 
-.bg-neural {
-  z-index: -20;
-}
+  .bg-neural {
+    z-index: -20;
+  }
 
-.bg-noise {
-  z-index: -10;
-  opacity: 0.05;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-@keyframes drift {
-  from { transform: translate3d(0, 0, 0) scale(1); }
-  to { transform: translate3d(6rem, 3rem, 0) scale(1.15); }
+  .bg-noise {
+    z-index: -10;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -133,12 +149,16 @@ body {
 /* ------------------------------------------------------------------ */
 
 @layer components {
+  .skip-link {
+    @apply fixed top-3 left-4 z-200 -translate-y-20 rounded-md bg-neon px-3 py-2 font-mono text-xs font-medium text-ink transition-transform focus:translate-y-0;
+  }
+
   .container-site {
     @apply mx-auto w-full max-w-site px-5 sm:px-8;
   }
 
   .kicker {
-    @apply font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-neon/80;
+    @apply font-mono text-[11px] font-medium tracking-[0.22em] text-neon/80 uppercase;
   }
 
   .text-gradient {
@@ -158,7 +178,7 @@ body {
 
   /* Glass panel */
   .panel {
-    @apply relative rounded-2xl border border-line/[0.08];
+    @apply relative rounded-2xl border border-line/8;
     background:
       linear-gradient(180deg, rgb(var(--line) / 0.045), rgb(var(--line) / 0.012)),
       rgb(var(--ink-2) / 0.55);
@@ -172,7 +192,9 @@ body {
     --hud-size: 12px;
   }
   .hud > .hud-corners {
-    @apply pointer-events-none absolute -inset-px rounded-[inherit];
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
     background:
       linear-gradient(var(--hud), var(--hud)) top left / var(--hud-size) 1px no-repeat,
       linear-gradient(var(--hud), var(--hud)) top left / 1px var(--hud-size) no-repeat,
@@ -182,12 +204,13 @@ body {
       linear-gradient(var(--hud), var(--hud)) bottom left / 1px var(--hud-size) no-repeat,
       linear-gradient(var(--hud), var(--hud)) bottom right / var(--hud-size) 1px no-repeat,
       linear-gradient(var(--hud), var(--hud)) bottom right / 1px var(--hud-size) no-repeat;
-    border-radius: 0;
     opacity: 0.7;
-    transition: opacity 0.3s var(--ease-out), inset 0.3s var(--ease-out);
+    transition:
+      opacity 0.3s var(--ease-out),
+      inset 0.3s var(--ease-out);
   }
   .hud:hover > .hud-corners {
-    @apply -inset-1.5;
+    inset: -6px;
     opacity: 1;
   }
 
@@ -222,7 +245,9 @@ body {
       rgb(var(--plasma) / 0.35) 35%,
       transparent 60%
     );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
   }
@@ -234,11 +259,12 @@ body {
   }
 
   /* Buttons */
-  .btn {
+  .btn-primary,
+  .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-all duration-300;
   }
   .btn-primary {
-    @apply btn text-ink;
+    @apply text-ink;
     background: linear-gradient(100deg, rgb(var(--neon)), rgb(var(--plasma)));
     box-shadow:
       0 0 0 1px rgb(var(--neon) / 0.4),
@@ -251,15 +277,15 @@ body {
     transform: translateY(-1px);
   }
   .btn-ghost {
-    @apply btn border border-line/10 bg-line/[0.03] text-fg hover:border-neon/40 hover:bg-neon/[0.06] hover:text-white;
+    @apply border border-line/10 bg-line/3 text-fg hover:border-neon/40 hover:bg-neon/6 hover:text-white;
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-md border border-line/[0.08] bg-line/[0.03] px-2 py-1 font-mono text-[11px] leading-none text-fg/70;
+    @apply inline-flex items-center gap-1.5 rounded-md border border-line/8 bg-line/3 px-2 py-1 font-mono text-[11px] leading-none text-fg/70;
   }
 
   .link-arrow {
-    @apply inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.18em] text-muted transition-colors hover:text-neon;
+    @apply inline-flex items-center gap-1.5 font-mono text-xs tracking-[0.18em] text-muted uppercase transition-colors hover:text-neon;
   }
 
   .status-dot {
@@ -286,28 +312,40 @@ body {
       transparent 3px
     );
   }
-}
 
-/* ------------------------------------------------------------------ */
-/* Pipeline bus                                                        */
-/* ------------------------------------------------------------------ */
+  /* Pipeline bus */
+  .bus {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--line) / 0.14) 8%,
+      rgb(var(--line) / 0.14) 92%,
+      transparent
+    );
+  }
+  .bus-pulse {
+    position: absolute;
+    top: -1px;
+    height: 3px;
+    width: 14%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, transparent, rgb(var(--neon)), rgb(var(--plasma)), transparent);
+    filter: drop-shadow(0 0 6px rgb(var(--neon)));
+    animation: bus 4.8s var(--ease-out) infinite;
+  }
 
-.bus {
-  background: linear-gradient(90deg, transparent, rgb(var(--line) / 0.14) 8%, rgb(var(--line) / 0.14) 92%, transparent);
-}
-.bus-pulse {
-  position: absolute;
-  top: -1px;
-  height: 3px;
-  width: 14%;
-  border-radius: 9999px;
-  background: linear-gradient(90deg, transparent, rgb(var(--neon)), rgb(var(--plasma)), transparent);
-  filter: drop-shadow(0 0 6px rgb(var(--neon)));
-  animation: bus 4.8s var(--ease-out) infinite;
+  .rise {
+    animation: rise 0.9s var(--ease-out) both;
+    animation-delay: var(--d, 0ms);
+  }
+  .palette-in {
+    animation: palette-in 0.22s var(--ease-out) both;
+  }
 }
 
 /* ------------------------------------------------------------------ */
 /* Article (Medium posts / GitHub READMEs)                             */
+/* Unlayered on purpose: these must win over the typography plugin.    */
 /* ------------------------------------------------------------------ */
 
 .article {
@@ -328,7 +366,7 @@ body {
   --tw-prose-pre-bg: rgb(var(--ink-2) / 0.9);
   --tw-prose-th-borders: rgb(var(--line) / 0.15);
   --tw-prose-td-borders: rgb(var(--line) / 0.08);
-  @apply max-w-none;
+  max-width: none;
 }
 .article :where(h1, h2, h3, h4) {
   @apply font-semibold tracking-tight;
@@ -341,7 +379,7 @@ body {
   @apply text-white decoration-neon;
 }
 .article :where(code):not(:where(pre code)) {
-  @apply rounded-md border border-line/10 bg-line/[0.05] px-1.5 py-0.5 font-mono text-[0.85em] font-normal;
+  @apply rounded-md border border-line/10 bg-line/5 px-1.5 py-0.5 font-mono text-[0.85em] font-normal;
 }
 .article :where(code):not(:where(pre code))::before,
 .article :where(code):not(:where(pre code))::after {
@@ -358,7 +396,7 @@ body {
   @apply text-center font-mono text-xs;
 }
 .article :where(blockquote) {
-  @apply rounded-r-lg bg-plasma/[0.05] py-1 not-italic;
+  @apply rounded-r-lg bg-plasma/5 py-1 not-italic;
 }
 .article :where(table) {
   @apply block overflow-x-auto;
@@ -367,11 +405,6 @@ body {
 /* ------------------------------------------------------------------ */
 /* Motion                                                              */
 /* ------------------------------------------------------------------ */
-
-.rise {
-  animation: rise 0.9s var(--ease-out) both;
-  animation-delay: var(--d, 0ms);
-}
 
 /* Scroll-driven reveal where supported; content is simply visible elsewhere. */
 @supports (animation-timeline: view()) {
@@ -382,6 +415,10 @@ body {
   }
 }
 
+@keyframes drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(6rem, 3rem, 0) scale(1.15); }
+}
 @keyframes rise {
   from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
   to { opacity: 1; transform: none; filter: none; }
@@ -402,9 +439,6 @@ body {
 @keyframes palette-in {
   from { opacity: 0; transform: translateY(-8px) scale(0.98); }
   to { opacity: 1; transform: none; }
-}
-.palette-in {
-  animation: palette-in 0.22s var(--ease-out) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

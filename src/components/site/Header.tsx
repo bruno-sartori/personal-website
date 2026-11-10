@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { NAV } from '@/lib/site';
 import { cn } from '@/lib/utils';
+import { useIsApple, useScrolledPast } from '@/lib/hooks';
 import { Icon, Logo } from '@/components/ui/Icon';
 
 export function openPalette() {
@@ -13,16 +13,8 @@ export function openPalette() {
 
 export default function Header() {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
-  const [modKey, setModKey] = useState('⌘');
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    if (!/Mac|iPhone|iPad/i.test(navigator.userAgent)) setModKey('Ctrl');
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  const scrolled = useScrolledPast(12);
+  const modKey = useIsApple() ? '⌘' : 'Ctrl';
 
   return (
     <header

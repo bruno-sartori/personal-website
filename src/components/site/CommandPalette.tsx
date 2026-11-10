@@ -1,12 +1,19 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { SITE, SOCIALS } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { Icon, type IconName } from '@/components/ui/Icon';
 
 type Group = 'Navigate' | 'Projects' | 'Posts' | 'Actions' | 'Ask AI';
+
+/** Commands are plain data; `run()` below decides what each action does. */
+type Action =
+  | { type: 'go'; href: string }
+  | { type: 'open'; href: string }
+  | { type: 'copy'; value: string }
+  | { type: 'ask'; question: string };
 
 interface Command {
   id: string;
@@ -15,7 +22,7 @@ interface Command {
   hint?: string;
   icon: IconName;
   keywords?: string;
-  run: () => void;
+  action: Action;
 }
 
 interface Props {
@@ -24,6 +31,26 @@ interface Props {
 }
 
 const GROUP_ORDER: Group[] = ['Navigate', 'Projects', 'Posts', 'Actions', 'Ask AI'];
+
+const NAV_COMMANDS: Command[] = [
+  { id: 'nav-home', group: 'Navigate', label: 'Home', icon: 'home', hint: '/', action: { type: 'go', href: '/' } },
+  { id: 'nav-ai', group: 'Navigate', label: 'How I work with AI', icon: 'sparkles', hint: '/#ai', keywords: 'agents workflow claude mcp', action: { type: 'go', href: '/#ai' } },
+  { id: 'nav-projects', group: 'Navigate', label: 'Projects', icon: 'folder', hint: '/projects', keywords: 'repos github code', action: { type: 'go', href: '/projects' } },
+  { id: 'nav-blog', group: 'Navigate', label: 'Blog', icon: 'book', hint: '/blog', keywords: 'posts articles writing medium', action: { type: 'go', href: '/blog' } },
+  { id: 'nav-contact', group: 'Navigate', label: 'Contact', icon: 'mail', hint: '/#contact', keywords: 'email hire talk', action: { type: 'go', href: '/#contact' } },
+];
+
+const ACTION_COMMANDS: Command[] = [
+  { id: 'copy-email', group: 'Actions', label: 'Copy email address', hint: SITE.email, icon: 'copy', keywords: 'mail contact', action: { type: 'copy', value: SITE.email } },
+  ...SOCIALS.map<Command>((s) => ({
+    id: `social-${s.name}`,
+    group: 'Actions',
+    label: `Open ${s.name}`,
+    hint: s.handle,
+    icon: s.icon,
+    action: { type: 'open', href: s.href },
+  })),
+];
 
 export default function CommandPalette({ posts, projects }: Props) {
   const router = useRouter();
@@ -35,36 +62,9 @@ export default function CommandPalette({ posts, projects }: Props) {
   const listRef = useRef<HTMLUListElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
 
-  const close = useCallback(() => {
-    setOpen(false);
-    setQuery('');
-    setActive(0);
-    returnFocus.current?.focus?.();
-  }, []);
-
-  const go = useCallback(
-    (href: string) => {
-      close();
-      router.push(href);
-    },
-    [close, router],
-  );
-
-  const external = useCallback(
-    (href: string) => {
-      close();
-      window.open(href, '_blank', 'noopener,noreferrer');
-    },
-    [close],
-  );
-
-  const baseCommands = useMemo<Command[]>(
+  const commands = useMemo<Command[]>(
     () => [
-      { id: 'nav-home', group: 'Navigate', label: 'Home', icon: 'home', hint: '/', run: () => go('/') },
-      { id: 'nav-ai', group: 'Navigate', label: 'How I work with AI', icon: 'sparkles', hint: '/#ai', keywords: 'agents workflow claude mcp', run: () => go('/#ai') },
-      { id: 'nav-projects', group: 'Navigate', label: 'Projects', icon: 'folder', hint: '/projects', keywords: 'repos github code', run: () => go('/projects') },
-      { id: 'nav-blog', group: 'Navigate', label: 'Blog', icon: 'book', hint: '/blog', keywords: 'posts articles writing medium', run: () => go('/blog') },
-      { id: 'nav-contact', group: 'Navigate', label: 'Contact', icon: 'mail', hint: '/#contact', keywords: 'email hire talk', run: () => go('/#contact') },
+      ...NAV_COMMANDS,
       ...projects.map<Command>((p) => ({
         id: `project-${p.slug}`,
         group: 'Projects',
@@ -72,7 +72,7 @@ export default function CommandPalette({ posts, projects }: Props) {
         hint: 'repo',
         icon: 'folder',
         keywords: p.description,
-        run: () => go(`/projects/${p.slug}`),
+        action: { type: 'go', href: `/projects/${p.slug}` },
       })),
       ...posts.map<Command>((p) => ({
         id: `post-${p.slug}`,
@@ -80,73 +80,53 @@ export default function CommandPalette({ posts, projects }: Props) {
         label: p.title,
         hint: 'post',
         icon: 'book',
-        run: () => go(`/blog/${p.slug}`),
+        action: { type: 'go', href: `/blog/${p.slug}` },
       })),
-      {
-        id: 'copy-email',
-        group: 'Actions',
-        label: copied ? 'Copied to clipboard' : 'Copy email address',
-        hint: SITE.email,
-        icon: copied ? 'check' : 'copy',
-        keywords: 'mail contact',
-        run: () => {
-          navigator.clipboard?.writeText(SITE.email).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1800);
-          });
-        },
-      },
-      ...SOCIALS.map<Command>((s) => ({
-        id: `social-${s.name}`,
-        group: 'Actions',
-        label: `Open ${s.name}`,
-        hint: s.handle,
-        icon: s.icon,
-        run: () => external(s.href),
-      })),
+      ...ACTION_COMMANDS,
     ],
-    [copied, external, go, posts, projects],
+    [posts, projects],
   );
 
   const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const tokens = q.split(/\s+/).filter(Boolean);
+    const question = query.trim();
+    const tokens = question.toLowerCase().split(/\s+/).filter(Boolean);
+
     // With an empty query, only show a short "recent" slice of posts and projects.
     const recent = new Set([
       ...posts.slice(0, 3).map((p) => `post-${p.slug}`),
       ...projects.slice(0, 4).map((p) => `project-${p.slug}`),
     ]);
+
     const matched = tokens.length
-      ? baseCommands.filter((c) => {
+      ? commands.filter((c) => {
           const haystack = `${c.label} ${c.keywords ?? ''} ${c.group}`.toLowerCase();
           return tokens.every((t) => haystack.includes(t));
         })
-      : baseCommands.filter((c) => (c.group !== 'Posts' && c.group !== 'Projects') || recent.has(c.id));
+      : commands.filter((c) => (c.group !== 'Posts' && c.group !== 'Projects') || recent.has(c.id));
 
-    const ask: Command[] = q
+    const ask: Command[] = question
       ? [
           {
             id: 'ask-claude',
             group: 'Ask AI',
-            label: `Ask Claude: “${query.trim()}”`,
+            label: `Ask Claude: “${question}”`,
             hint: 'reads /llms.txt',
             icon: 'sparkles',
-            run: () => {
-              const prompt = `Read ${window.location.origin}/llms.txt and answer this question about Bruno Sartori: ${query.trim()}`;
-              external(`https://claude.ai/new?q=${encodeURIComponent(prompt)}`);
-            },
+            action: { type: 'ask', question },
           },
         ]
       : [];
 
     const all = [...matched, ...ask];
     return GROUP_ORDER.flatMap((g) => all.filter((c) => c.group === g)).slice(0, 40);
-  }, [baseCommands, external, posts, projects, query]);
+  }, [commands, posts, projects, query]);
 
-  // open / close shortcuts
+  // Open / close shortcuts: ⌘K / Ctrl+K toggles, "/" opens, plus the header button event.
   useEffect(() => {
-    const onOpen = () => {
+    const show = () => {
       returnFocus.current = document.activeElement as HTMLElement | null;
+      setQuery('');
+      setActive(0);
       setOpen(true);
     };
     const onKey = (e: KeyboardEvent) => {
@@ -155,33 +135,34 @@ export default function CommandPalette({ posts, projects }: Props) {
         (e.target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName));
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        if (open) close();
-        else onOpen();
+        if (open) setOpen(false);
+        else show();
       } else if (e.key === '/' && !typing && !open) {
         e.preventDefault();
-        onOpen();
+        show();
       }
     };
-    window.addEventListener('palette:open', onOpen);
+    window.addEventListener('palette:open', show);
     window.addEventListener('keydown', onKey);
     return () => {
-      window.removeEventListener('palette:open', onOpen);
+      window.removeEventListener('palette:open', show);
       window.removeEventListener('keydown', onKey);
-    };
-  }, [close, open]);
-
-  // focus + scroll lock
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    requestAnimationFrame(() => inputRef.current?.focus());
-    return () => {
-      document.body.style.overflow = previous;
     };
   }, [open]);
 
-  useEffect(() => setActive(0), [query]);
+  // While open: focus the input, lock page scroll; on close, give focus back.
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    const previousFocus = returnFocus.current;
+    document.body.style.overflow = 'hidden';
+    const raf = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => {
+      cancelAnimationFrame(raf);
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus?.();
+    };
+  }, [open]);
 
   useEffect(() => {
     listRef.current
@@ -190,6 +171,32 @@ export default function CommandPalette({ posts, projects }: Props) {
   }, [active]);
 
   if (!open) return null;
+
+  const run = (cmd: Command) => {
+    const { action } = cmd;
+    switch (action.type) {
+      case 'go':
+        setOpen(false);
+        router.push(action.href);
+        break;
+      case 'open':
+        setOpen(false);
+        window.open(action.href, '_blank', 'noopener,noreferrer');
+        break;
+      case 'copy':
+        navigator.clipboard?.writeText(action.value).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1800);
+        });
+        break;
+      case 'ask': {
+        const prompt = `Read ${window.location.origin}/llms.txt and answer this question about ${SITE.name}: ${action.question}`;
+        setOpen(false);
+        window.open(`https://claude.ai/new?q=${encodeURIComponent(prompt)}`, '_blank', 'noopener,noreferrer');
+        break;
+      }
+    }
+  };
 
   const onInputKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
@@ -200,22 +207,20 @@ export default function CommandPalette({ posts, projects }: Props) {
       setActive((i) => Math.max(i - 1, 0));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      results[active]?.run();
+      if (results[active]) run(results[active]);
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      close();
+      setOpen(false);
     } else if (e.key === 'Tab') {
       e.preventDefault(); // keep focus inside the dialog
     }
   };
 
-  let lastGroup: Group | null = null;
-
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center bg-ink/70 px-4 pt-[12vh] backdrop-blur-md"
+      className="fixed inset-0 z-100 flex items-start justify-center bg-ink/70 px-4 pt-[12vh] backdrop-blur-md"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) close();
+        if (e.target === e.currentTarget) setOpen(false);
       }}
     >
       <div
@@ -225,15 +230,18 @@ export default function CommandPalette({ posts, projects }: Props) {
         className="palette-in panel hud w-full max-w-xl overflow-hidden shadow-[0_40px_120px_-30px_rgba(34,211,238,0.35)]"
       >
         <span className="hud-corners" aria-hidden="true" />
-        <div className="flex items-center gap-3 border-b border-line/[0.08] px-4">
+        <div className="flex items-center gap-3 border-b border-line/8 px-4">
           <span className="font-mono text-neon">❯</span>
           <input
             ref={inputRef}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setActive(0);
+            }}
             onKeyDown={onInputKey}
             placeholder="Jump to a page, search, or ask a question…"
-            className="h-14 w-full bg-transparent font-mono text-sm text-white placeholder:text-muted focus:outline-none"
+            className="h-14 w-full bg-transparent font-mono text-sm text-white placeholder:text-muted focus:outline-hidden"
             role="combobox"
             aria-expanded="true"
             aria-controls="palette-results"
@@ -249,12 +257,12 @@ export default function CommandPalette({ posts, projects }: Props) {
             <li className="px-3 py-10 text-center font-mono text-xs text-muted">no signal. try another query</li>
           )}
           {results.map((cmd, index) => {
-            const header = cmd.group !== lastGroup ? cmd.group : null;
-            lastGroup = cmd.group;
+            const header = index === 0 || results[index - 1].group !== cmd.group ? cmd.group : null;
+            const isCopied = cmd.action.type === 'copy' && copied;
             return (
               <li key={cmd.id} role="presentation">
                 {header && (
-                  <p className="px-3 pb-1.5 pt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-muted/80">
+                  <p className="px-3 pt-3 pb-1.5 font-mono text-[10px] tracking-[0.2em] text-muted/80 uppercase">
                     {header}
                   </p>
                 )}
@@ -264,18 +272,18 @@ export default function CommandPalette({ posts, projects }: Props) {
                   aria-selected={index === active}
                   data-index={index}
                   onMouseMove={() => setActive(index)}
-                  onClick={() => cmd.run()}
+                  onClick={() => run(cmd)}
                   className={cn(
-                    'flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
-                    index === active ? 'bg-neon/[0.09] text-white' : 'text-fg/75',
+                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
+                    index === active ? 'bg-neon/9 text-white' : 'text-fg/75',
                     cmd.group === 'Ask AI' && 'text-plasma',
                   )}
                 >
                   <Icon
-                    name={cmd.icon}
-                    className={cn('size-4', index === active ? 'text-neon' : 'text-muted')}
+                    name={isCopied ? 'check' : cmd.icon}
+                    className={cn('size-4', index === active ? 'text-neon' : 'text-muted', isCopied && 'text-signal')}
                   />
-                  <span className="min-w-0 flex-1 truncate">{cmd.label}</span>
+                  <span className="min-w-0 flex-1 truncate">{isCopied ? 'Copied to clipboard' : cmd.label}</span>
                   {cmd.hint && <span className="shrink-0 font-mono text-[11px] text-muted">{cmd.hint}</span>}
                 </div>
               </li>
@@ -283,7 +291,7 @@ export default function CommandPalette({ posts, projects }: Props) {
           })}
         </ul>
 
-        <div className="flex items-center justify-between gap-4 border-t border-line/[0.08] px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+        <div className="flex items-center justify-between gap-4 border-t border-line/8 px-4 py-2.5 font-mono text-[10px] tracking-[0.14em] text-muted uppercase">
           <span className="flex items-center gap-3">
             <span>↑↓ move</span>
             <span>↵ open</span>

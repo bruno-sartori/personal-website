@@ -8,14 +8,15 @@ import { Icon } from '@/components/ui/Icon';
 
 export const revalidate = 3600;
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
   return (await getPosts()).map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = await getPost(params.slug);
+  const { slug } = await params;
+  const post = await getPost(slug);
   if (!post) return { title: 'Post not found' };
   return {
     title: post.title,
@@ -26,8 +27,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PostPage({ params }: Props) {
+  const { slug } = await params;
   const posts = await getPosts();
-  const index = posts.findIndex((p) => p.slug === params.slug);
+  const index = posts.findIndex((p) => p.slug === slug);
   if (index === -1) notFound();
 
   const post = posts[index];

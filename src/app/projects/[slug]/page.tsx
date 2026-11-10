@@ -9,20 +9,22 @@ import { Icon } from '@/components/ui/Icon';
 
 export const revalidate = 3600;
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
   return (await getProjects()).map((project) => ({ slug: project.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const project = (await getProjects()).find((p) => p.slug === params.slug);
+  const { slug } = await params;
+  const project = (await getProjects()).find((p) => p.slug === slug);
   if (!project) return { title: 'Project not found' };
   return { title: project.name, description: project.description || `${project.name} on GitHub.` };
 }
 
 export default async function ProjectPage({ params }: Props) {
-  const project = await getProject(params.slug);
+  const { slug } = await params;
+  const project = await getProject(slug);
   if (!project) notFound();
 
   const meta = [

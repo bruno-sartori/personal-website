@@ -14,7 +14,7 @@ export default function PageHeader({
   return (
     <header className="max-w-3xl">
       <p className="rise kicker flex items-center gap-3">
-        <span className="h-px w-8 bg-gradient-to-r from-neon/70 to-transparent" aria-hidden="true" />
+        <span className="h-px w-8 bg-linear-to-r from-neon/70 to-transparent" aria-hidden="true" />
         {kicker}
       </p>
       <h1

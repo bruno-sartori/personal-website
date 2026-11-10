@@ -13,7 +13,7 @@ const LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="relative mt-32 border-t border-line/[0.06] bg-ink/40 backdrop-blur-sm">
+    <footer className="relative mt-32 border-t border-line/[0.06] bg-ink/40 backdrop-blur-xs">
       <div className="container-site grid gap-12 py-14 md:grid-cols-[1.5fr_1fr_1fr]">
         <div>
           <Link href="/" className="inline-flex items-center gap-3">
