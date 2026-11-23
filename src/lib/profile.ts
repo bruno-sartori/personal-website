@@ -112,7 +112,6 @@ export const STACK = {
     'Prompt design',
   ],
   education: [
-    { title: 'Postgraduate degree', detail: 'Internet of Things' },
     { title: 'Degree', detail: 'Systems Analysis & Development · IFSP' },
   ],
   offDuty: ['anime', 'Bujinkan ninjutsu', 'sci-fi', 'philosophy', 'quantum computing'],
